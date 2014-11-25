@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>2F086CA3-3614-4D0A-92F0-A6482353B628</string>
+	<key>IDESourceControlProjectName</key>
+	<string>MusicNetBand</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>1DD2942ED61AFD7F8AE30792F6C53F2BB0959B68</key>
+		<string>https://github.com/dkd903/musicians-imaginerit.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>MusicNetBand.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>1DD2942ED61AFD7F8AE30792F6C53F2BB0959B68</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/dkd903/musicians-imaginerit.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>1DD2942ED61AFD7F8AE30792F6C53F2BB0959B68</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>1DD2942ED61AFD7F8AE30792F6C53F2BB0959B68</string>
+			<key>IDESourceControlWCCName</key>
+			<string>MusicNetBand</string>
+		</dict>
+	</array>
+</dict>
+</plist>
