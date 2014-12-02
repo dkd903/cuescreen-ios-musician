@@ -13,6 +13,8 @@
 @interface MNBFirstViewController ()
 @property int first;
 @property int last;
+@property (strong, nonatomic) NSTimer *cdTimer;
+@property (strong, nonatomic) NSTimer *nxtCdTimer;
 @end
 
 @implementation MNBFirstViewController
@@ -24,33 +26,21 @@
 
     if ([_musicId isEqualToString:@"1"]) {
         [_musicImage setImage:[UIImage imageNamed:@"violin.png"]];
-        _musicianLabel1.textColor = [self getColor];
-        _voteLabel1.textColor = [self getColor];
         //[_uLabel1 setText:@"You"];
     } else if ([_musicId isEqualToString:@"2"]) {
         [_musicImage setImage:[UIImage imageNamed:@"violin.png"]];
-        _musicianLabel2.textColor = [self getColor];
-        _voteLabel2.textColor = [self getColor];
         //[_uLabel2 setText:@"You"];
     } else if ([_musicId isEqualToString:@"3"]) {
         [_musicImage setImage:[UIImage imageNamed:@"viola.png"]];
-        _musicianLabel3.textColor = [self getColor];
-        _voteLabel3.textColor = [self getColor];
         //[_uLabel3 setText:@"You"];
     } else if ([_musicId isEqualToString:@"4"]) {
         [_musicImage setImage:[UIImage imageNamed:@"cello.png"]];
-        _musicianLabel4.textColor = [self getColor];
-        _voteLabel4.textColor = [self getColor];
         //[_uLabel4 setText:@"You"];
     } else if ([_musicId isEqualToString:@"5"]) {
         [_musicImage setImage:[UIImage imageNamed:@"ukulele.png"]];
-        _musicianLabel5.textColor = [self getColor];
-        _voteLabel5.textColor = [self getColor];
         //[_uLabel5 setText:@"You"];
     } else if ([_musicId isEqualToString:@"6"]) {
         [_musicImage setImage:[UIImage imageNamed:@"vibes.png"]];
-        _musicianLabel6.textColor = [self getColor];
-        _voteLabel6.textColor = [self getColor];
         //[_uLabel6 setText:@"You"];
     }
     
@@ -63,6 +53,18 @@
     _musicVoteview.layer.masksToBounds = YES;
     _musicImageInstr.layer.cornerRadius = 5;
     _musicImageInstr.layer.masksToBounds = YES;
+    
+    _audienceVoteTime = 10;
+    _audienceVoteCurrentTime = 0;
+    
+    _cellEnterTime = (arc4random() % 4) + (arc4random() % 4) + 1 ;
+    _cellEnterCurrentTime = 0;
+    
+    _trackedCell = 0;
+    
+    _cell0.backgroundColor = [UIColor greenColor];
+    
+    //_audienceVoteTime = 10;
 }
 
 - (UIColor*)getColor {
@@ -73,7 +75,8 @@
 {
     [super viewDidAppear:animated];
     [_musicianIdentifierLabel setText:_musicName];
-    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateMusicianData) userInfo:nil repeats:YES];
+    
+    [self audienceCountdown];
     
 }
 
@@ -83,55 +86,103 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)nextClick:(id)sender {
-    [_nextCellIndicator startAnimating];
-    //NSLog(@"ggg %@", _musicId);
-    AFHTTPRequestOperationManager *manager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:[NSURL URLWithString:kMNapiUrl]];
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"application/json"];
-    manager.requestSerializer = [AFJSONRequestSerializer serializer];
-    NSDictionary *parameters = @{@"musicianId": [NSNumber numberWithInt:[_musicId intValue] ]};
-    AFHTTPRequestOperation *op = [manager POST:@"toNextCell" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success: %@ ***** %@", operation.responseString, responseObject);
-        [_nextCellIndicator stopAnimating];
-        //UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        //[alertViewE show];
-        [_cellLabel setText:[responseObject[@"cellNumber"] stringValue]];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error: %@ ***** %@", operation.responseString, error);
-        [_nextCellIndicator stopAnimating];
-        UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        //[alertViewE show];
-    }];
-    [op start];
+- (void)audienceCountdown {
+    
+    _countdownLabel.text = @"Audience Voting";
+    _countdownTiming.text = @"";
+    
+    _cdTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateMusicianData) userInfo:nil repeats:YES];
+    
 }
 
 - (void)updateMusicianData {
-    [self showVotes];
     
-    [self updateCurrentCell];
-    //[self showCells];
+    //_countdownTiming.text = @"3";
+    
+    if (_audienceVoteCurrentTime < _audienceVoteTime) {
+        _audienceVoteCurrentTime++;
+        _countdownTiming.text = [NSString stringWithFormat:@"%d", _audienceVoteTime-_audienceVoteCurrentTime];
+    } else if (_audienceVoteCurrentTime == _audienceVoteTime) {
+        _audienceVoteCurrentTime = 0;
+        //_countdownTiming.text = [NSString stringWithFormat:@"%d", _audienceVoteTime-_audienceVoteCurrentTime];
+        
+        [_cdTimer invalidate];
+        
+        [self nextCellCountdown];
+        
+    }
 }
 
-- (void)showVotes {
-    AFHTTPRequestOperationManager *manager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:[NSURL URLWithString:kMNapiUrl]];
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"application/json"];
-    manager.requestSerializer = [AFJSONRequestSerializer serializer];
-    NSDictionary *parameters = @{@"musicianId": [NSNumber numberWithInt:[_musicId intValue] ]};
-    AFHTTPRequestOperation *op = [manager POST:@"getAllVotes" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success: %@ ***** %@", operation.responseString, responseObject);
-        [_voteLabel1 setText:responseObject[@"1"]];
-        [_voteLabel2 setText:responseObject[@"2"]];
-        [_voteLabel3 setText:responseObject[@"3"]];
-        [_voteLabel4 setText:responseObject[@"4"]];
-        [_voteLabel5 setText:responseObject[@"5"]];
-        [_voteLabel6 setText:responseObject[@"6"]];
-        //NSLog(@"%@", responseObject[@"1"]);
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error: %@ ***** %@", operation.responseString, error);
-        //UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        //[alertViewE show];
-    }];
-    [op start];
+- (void) nextCellCountdown {
+   
+    _countdownLabel.text = @"Enter Next Cell in...";
+    _countdownTiming.text = @"";
+    
+    _cellEnterTime = (arc4random() % 4) + (arc4random() % 4) + 1 ;
+    
+    _nxtCdTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateMusicianDataCell) userInfo:nil repeats:YES];
+    
+    _trackedCell++;
+    
+}
+
+- (void)updateMusicianDataCell {
+    
+    if (_cellEnterCurrentTime < _cellEnterTime) {
+        _cellEnterCurrentTime++;
+        _countdownTiming.text = [NSString stringWithFormat:@"%d", _cellEnterTime-_cellEnterCurrentTime];
+    } else if (_cellEnterCurrentTime == _cellEnterTime) {
+        _cellEnterCurrentTime = 0;
+        //_countdownTiming.text = [NSString stringWithFormat:@"%d", _cellEnterTime-_cellEnterCurrentTime];
+        
+        [_nxtCdTimer invalidate];
+        
+        _countdownLabel.text = @"Enter Cell";
+        
+        _countdownTiming.text = [NSString stringWithFormat:@"%d", _trackedCell];
+        
+        [self cellHighlight];
+        
+        if (_trackedCell > 6) {
+            _countdownLabel.text = @"";
+            _countdownTiming.text = @"2nd Half";
+        }
+        
+        if (_trackedCell <= 6) {
+            [self performSelector:@selector(audienceCountdown) withObject:nil afterDelay:3];
+        }
+        
+    }
+}
+
+-(void) cellHighlight {
+    NSLog(@"%d", _trackedCell);
+    switch (_trackedCell) {
+        case 1:
+            _cell1.backgroundColor = [UIColor greenColor];
+            break;
+        case 2:
+            _cell2.backgroundColor = [UIColor greenColor];
+            break;
+        case 3:
+            _cell3.backgroundColor = [UIColor greenColor];
+            break;
+        case 4:
+            _cell4.backgroundColor = [UIColor greenColor];
+            break;
+        case 5:
+            _cell5.backgroundColor = [UIColor greenColor];
+            break;
+        case 6:
+            _cell6.backgroundColor = [UIColor greenColor];
+            break;
+            
+        default:
+            [_cdTimer invalidate];
+            [_nxtCdTimer invalidate];
+            _celld.backgroundColor = [UIColor greenColor];
+            break;
+    }
 }
 
 - (void)showCells {
@@ -141,38 +192,11 @@
     NSDictionary *parameters = @{@"musicianId": [NSNumber numberWithInt:[_musicId intValue] ]};
     AFHTTPRequestOperation *op = [manager POST:@"getCell" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSLog(@"Success: %@ ***** %@", operation.responseString, responseObject);
-        [_cellLabel1 setText:responseObject[@"0"]];
-        [_cellLabel2 setText:responseObject[@"1"]];
-        [_cellLabel3 setText:responseObject[@"2"]];
-        [_cellLabel4 setText:responseObject[@"3"]];
-        [_cellLabel5 setText:responseObject[@"4"]];
-        [_cellLabel6 setText:responseObject[@"5"]];
+
         NSLog(@"%@", responseObject[@"1"]);
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@ ***** %@", operation.responseString, error);
         //UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        //[alertViewE show];
-    }];
-    [op start];
-}
-
-- (void)updateCurrentCell {
-    //[_nextCellIndicator startAnimating];
-    //NSLog(@"ggg %@", _musicId);
-    AFHTTPRequestOperationManager *manager = [[AFHTTPRequestOperationManager alloc] initWithBaseURL:[NSURL URLWithString:kMNapiUrl]];
-    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObject:@"application/json"];
-    manager.requestSerializer = [AFJSONRequestSerializer serializer];
-    NSDictionary *parameters = @{@"musicianId": [NSNumber numberWithInt:[_musicId intValue] ]};
-    AFHTTPRequestOperation *op = [manager POST:@"getCurrentCell" parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        NSLog(@"Success: %@ ***** %@", operation.responseString, responseObject);
-        [_nextCellIndicator stopAnimating];
-        //UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-        //[alertViewE show];
-        [_cellLabel setText:[responseObject[@"cellNumber"] stringValue]];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error: %@ ***** %@", operation.responseString, error);
-        //[_nextCellIndicator stopAnimating];
-        UIAlertView *alertViewE = [[UIAlertView alloc] initWithTitle:@"Response" message:operation.responseString delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
         //[alertViewE show];
     }];
     [op start];
